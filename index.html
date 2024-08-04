@@ -1,207 +1,280 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
-        <meta name="mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <link rel="stylesheet" href="css/leaflet.css">
-        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
-        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
-        <link rel="stylesheet" href="css/qgis2web.css">
-        <link rel="stylesheet" href="css/fontawesome-all.min.css">
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                text-align: center;
-                padding: 50px;
-            }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sample Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
 
-            #login {
-                display: none;
-                margin: auto;
-                width: 300px;
-                padding: 20px;
-                border: 1px solid #ccc;
-                box-shadow: 0px 0px 10px 0px #000;
-            }
+  <!-- Define the SVG patterns -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="position: absolute; width: 0; height: 0;">
+    <defs>
+      <pattern id="hashedPatternChinaWifi" width="10" height="10" patternUnits="userSpaceOnUse">
+        <path d="M0,0 L10,10 M10,0 L0,10" stroke="#33a02c" stroke-width="2"/>
+      </pattern>
+      <pattern id="hashedPatternForeignSim" width="10" height="10" patternUnits="userSpaceOnUse">
+        <path d="M0,0 L10,10 M10,0 L0,10" stroke="#a67db8" stroke-width="2" transform="rotate(135 5 5)"/>
+      </pattern>
+      <pattern id="hashedPatternSatellite" width="10" height="10" patternUnits="userSpaceOnUse">
+        <path d="M0,0 L10,10 M10,0 L0,10" stroke="#e31a1c" stroke-width="2" transform="rotate(135 5 5)"/>
+      </pattern>
+    </defs>
+  </svg>
 
-            #login input[type="text"], #login input[type="password"] {
-                width: 100%;
-                padding: 10px;
-                margin: 5px 0 20px 0;
-                border: 1px solid #ccc;
-            }
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
+  <script>
+    // Initialize the map
+    var map = L.map('map').setView([21.9162, 95.9560], 7); // Change the coordinates and zoom level as needed
 
-            #login button {
-                width: 100%;
-                padding: 10px;
-                background-color: #5cb85c;
-                color: white;
-                border: none;
-                cursor: pointer;
-            }
+    // Add a tile layer
+    // var tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //   maxZoom: 18,
+    // }).addTo(map);
 
-            #login button:hover {
-                background-color: #4cae4c;
-            }
+    // Styling functions
+    function style_mmr_admin0(feature) {
+      return {
+        color: "#232323",
+        weight: 0.26,
+        fillOpacity: 0,
+      };
+    }
 
-            #map {
-                width: 1606px;
-                height: 805px;
-                display: none;
-            }
+    function style_ero_controlled(feature) {
+      if (feature.properties.ero === 'y') {
+        return {
+          color: "black",
+          weight: 1,
+          fillOpacity: 0.01, // Ensure interactivity
+        };
+      } else {
+        return {
+          opacity: 0,
+          fillOpacity: 0,
+        };
+      }
+    }
 
-            .legend {
-                padding: 6px 8px;
-                font: 14px Arial, Helvetica, sans-serif;
-                background: white;
-                background: rgba(255, 255, 255, 0.8);
-                box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-                border-radius: 5px;
-                line-height: 24px;
-                color: #555;
-            }
+    function style_alternative(feature) {
+      if (!feature.properties.Alternativ) {
+        return {
+          fillColor: '#bb25d9', // Default fill color
+          color: '#232323', // Default border color
+          weight: 1,
+          fillOpacity: 0.5
+        };
+      }
+      switch (feature.properties.Alternativ) {
+        case 'China wifi cable':
+          return {
+            fillColor: 'url(#hashedPatternChinaWifi)', // Use the pattern defined
+            color: '#33a02c',
+            weight: 2,
+            fillOpacity: 0.5
+          };
+        case 'Foreign SIM':
+          return {
+            fillColor: 'url(#hashedPatternForeignSim)', // Use the pattern defined
+            color: '#a67db8',
+            weight: 2,
+            fillOpacity: 0.5
+          };
+        case 'Satellite Internet':
+          return {
+            fillColor: 'url(#hashedPatternSatellite)', // Use the pattern defined
+            color: '#e31a1c',
+            weight: 2,
+            fillOpacity: 0.5
+          };
+        default:
+          return {
+            fillColor: '#bb25d9', // Default fill color
+            color: '#232323', // Default border color
+            weight: 1,
+            fillOpacity: 0.5
+          };
+      }
+    }
 
-            .legend i {
-                width: 24px;
-                height: 24px;
-                float: left;
-                margin-right: 8px;
-                opacity: 0.7;
-            }
-        </style>
-        <title>Sample Map</title>
-    </head>
-    <body>
-        <div id="login">
-            <h2>Login</h2>
-            <input type="text" id="username" placeholder="Username" />
-            <input type="password" id="password" placeholder="Password" />
-            <button onclick="login()">Login</button>
-        </div>
-        <div id="map"></div>
-        <script src="js/qgis2web_expressions.js"></script>
-        <script src="js/leaflet.js"></script>
-        <script src="js/L.Control.Layers.Tree.min.js"></script>
-        <script src="js/L.Control.Locate.min.js"></script>
-        <script src="js/leaflet.rotatedMarker.js"></script>
-        <script src="js/leaflet.pattern.js"></script>
-        <script src="js/leaflet-hash.js"></script>
-        <script src="js/Autolinker.min.js"></script>
-        <script src="js/rbush.min.js"></script>
-        <script src="js/labelgun.min.js"></script>
-        <script src="js/labels.js"></script>
-        <script>
-            const validUsername = 'user';
-            const validPassword = 'password';
+    function style_Internet_connectivity(feature) {
+      switch (feature.properties.status) {
+        case 'Activated Area':
+          return {
+            fillColor: "#f9f3f3",
+            fillOpacity: 0.7,
+            color: 'transparent'
+          };
+        case 'Do Not Know':
+          return {
+            fillColor: "#edb183",
+            fillOpacity: 0.7,
+            color: 'transparent'
+          };
+        case 'Internet Blackout':
+          return {
+            fillColor: "#7ea8be",
+            fillOpacity: 0.7,
+            color: 'transparent'
+          };
+        case 'Mobile Phone & Internet Blackout':
+          return {
+            fillColor: "#f4d8cd",
+            fillOpacity: 0.7,
+            color: 'transparent'
+          };
+        case 'Only 2G Available':
+          return {
+            fillColor: "#525252",
+            fillOpacity: 0.7,
+            color: 'transparent'
+          };
+      }
+    }
 
-            function login() {
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
+    // Function to bind pop-ups to features
+    function onEachFeature(feature, layer) {
+      if (feature.properties) {
+        var popupContent = '<strong>Status:</strong> ' + (feature.properties.status || 'N/A') + '<br>' +
+                           '<strong>TS:</strong> ' + (feature.properties.TS || 'N/A');
+        layer.bindPopup(popupContent);
+      }
+    }
 
-                if (username === validUsername && password === validPassword) {
-                    document.getElementById('login').style.display = 'none';
-                    document.getElementById('map').style.display = 'block';
-                    initMap();
-                } else {
-                    alert('Invalid username or password');
-                }
-            }
+    // Create layer groups for each sub-category
+    var activatedAreaLayer = new L.GeoJSON.AJAX("geojson/Internet_connectivity.geojson", {
+      style: function(feature) {
+        if (feature.properties.status === 'Activated Area') return style_Internet_connectivity(feature);
+      },
+      filter: function(feature) {
+        return feature.properties.status === 'Activated Area';
+      },
+      onEachFeature: onEachFeature
+    });
 
-            function initMap() {
-                var map = L.map('map', {
-                    zoomControl: true, maxZoom: 28, minZoom: 1
-                });
-                var hash = new L.Hash(map);
-                //map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
-                var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+    var doNotKnowLayer = new L.GeoJSON.AJAX("geojson/Internet_connectivity.geojson", {
+      style: function(feature) {
+        if (feature.properties.status === 'Do Not Know') return style_Internet_connectivity(feature);
+      },
+      filter: function(feature) {
+        return feature.properties.status === 'Do Not Know';
+      },
+      onEachFeature: onEachFeature
+    });
 
-                function removeEmptyRowsFromPopupContent(content, feature) {
-                    var tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = content;
-                    var rows = tempDiv.querySelectorAll('tr');
-                    for (var i = 0; i < rows.length; i++) {
-                        var td = rows[i].querySelector('td.visible-with-data');
-                        var key = td ? td.id : '';
-                        if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
-                            rows[i].parentNode.removeChild(rows[i]);
-                        }
-                    }
-                    return tempDiv.innerHTML;
-                }
+    var internetBlackoutLayer = new L.GeoJSON.AJAX("geojson/Internet_connectivity.geojson", {
+      style: function(feature) {
+        if (feature.properties.status === 'Internet Blackout') return style_Internet_connectivity(feature);
+      },
+      filter: function(feature) {
+        return feature.properties.status === 'Internet Blackout';
+      },
+      onEachFeature: onEachFeature
+    });
 
-                document.querySelector(".leaflet-popup-pane").addEventListener("load", function(event) {
-                    var tagName = event.target.tagName,
-                        popup = map._popup;
-                    // Also check if flag is already set.
-                    if (tagName === "IMG" && popup && !popup._updated) {
-                        popup._updated = true; // Set flag to prevent looping.
-                        popup.update();
-                    }
-                }, true);
+    var mobilePhoneAndInternetBlackoutLayer = new L.GeoJSON.AJAX("geojson/Internet_connectivity.geojson", {
+      style: function(feature) {
+        if (feature.properties.status === 'Mobile Phone & Internet Blackout') return style_Internet_connectivity(feature);
+      },
+      filter: function(feature) {
+        return feature.properties.status === 'Mobile Phone & Internet Blackout';
+      },
+      onEachFeature: onEachFeature
+    });
 
-                L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
-                var bounds_group = new L.featureGroup([]);
+    var only2GAvailableLayer = new L.GeoJSON.AJAX("geojson/Internet_connectivity.geojson", {
+      style: function(feature) {
+        if (feature.properties.status === 'Only 2G Available') return style_Internet_connectivity(feature);
+      },
+      filter: function(feature) {
+        return feature.properties.status === 'Only 2G Available';
+      },
+      onEachFeature: onEachFeature
+    });
 
-                function setBounds() {
-                    if (bounds_group.getLayers().length) {
-                        map.fitBounds(bounds_group.getBounds());
-                    }
-                }
+    // Create layer groups for alternative internet categories
+    var chinaWifiCableLayer = new L.GeoJSON.AJAX("geojson/alternative_1.geojson", {
+      style: function(feature) {
+        if (feature.properties.Alternativ === 'China wifi cable') return style_alternative(feature);
+      },
+      filter: function(feature) {
+        return feature.properties.Alternativ === 'China wifi cable';
+      }
+    });
 
-                map.createPane('pane_mmr_pd_2020_1km_0');
-                map.getPane('pane_mmr_pd_2020_1km_0').style.zIndex = 400;
-                var img_mmr_pd_2020_1km_0 = 'data/mmr_pd_2020_1km_0.png';
-                var img_bounds_mmr_pd_2020_1km_0 = [[8.816250161118141, 92.19041630814351], [28.549583415518143, 101.17374960554352]];
-                var layer_mmr_pd_2020_1km_0 = new L.imageOverlay(img_mmr_pd_2020_1km_0,
-                    img_bounds_mmr_pd_2020_1km_0,
-                    { pane: 'pane_mmr_pd_2020_1km_0' });
-                bounds_group.addLayer(layer_mmr_pd_2020_1km_0);
-                map.addLayer(layer_mmr_pd_2020_1km_0);
-                var baseMaps = {};
-                var overlaysTree = [
-                    { label: "mmr_pd_2020_1km", layer: layer_mmr_pd_2020_1km_0 },
-                ]
-                var lay = L.control.layers.tree(null, overlaysTree, {
-                    //namedToggle: true,
-                    //selectorBack: false,
-                    //closedSymbol: '&#8862; &#x1f5c0;',
-                    //openedSymbol: '&#8863; &#x1f5c1;',
-                    //collapseAll: 'Collapse all',
-                    //expandAll: 'Expand all',
-                    collapsed: false,
-                });
-                lay.addTo(map);
-                setBounds();
-                L.ImageOverlay.include({
-                    getBounds: function () {
-                        return this._bounds;
-                    }
-                });
+    var foreignSimLayer = new L.GeoJSON.AJAX("geojson/alternative_1.geojson", {
+      style: function(feature) {
+        if (feature.properties.Alternativ === 'Foreign SIM') return style_alternative(feature);
+      },
+      filter: function(feature) {
+        return feature.properties.Alternativ === 'Foreign SIM';
+      }
+    });
 
-                // Create a legend
-                var legend = L.control({position: 'bottomright'});
+    var satelliteInternetLayer = new L.GeoJSON.AJAX("geojson/alternative_1.geojson", {
+      style: function(feature) {
+        if (feature.properties.Alternativ === 'Satellite Internet') return style_alternative(feature);
+      },
+      filter: function(feature) {
+        return feature.properties.Alternativ === 'Satellite Internet';
+      }
+    });
 
-                legend.onAdd = function (map) {
-                    var div = L.DomUtil.create('div', 'legend'),
-                        grades = ['< 20', '20-40', '40-60', '60-80', '80-100', '100-120', '120-140', '140-160', '160-180', '> 180'],
-                        colors = ['#2b83ba', '#64abb0', '#9dd3a6', '#c7e8ad', '#ecf7b9', '#ffedaa', '#fec980', '#f99d59', '#e85b3b', '#d7191c'];
+    // Create layer groups for resistance control area
+    var eroControlledLayer = new L.GeoJSON.AJAX("geojson/ero_controlled.geojson", {
+      style: style_ero_controlled,
+      onEachFeature: onEachFeature // Ensure popups are bound
+    });
 
-                    for (var i = 0; i < grades.length; i++) {
-                        div.innerHTML +=
-                            '<i style="background:' + colors[i] + '"></i> ' +
-                            grades[i] + (grades[i + 1] ? '<br>' : '');
-                    }
+    // Add layers to the map
+    activatedAreaLayer.addTo(map);
+    doNotKnowLayer.addTo(map);
+    internetBlackoutLayer.addTo(map);
+    mobilePhoneAndInternetBlackoutLayer.addTo(map);
+    only2GAvailableLayer.addTo(map);
+    eroControlledLayer.addTo(map);
+    chinaWifiCableLayer.addTo(map);
+    foreignSimLayer.addTo(map);
+    satelliteInternetLayer.addTo(map);
 
-                    return div;
-                };
+    // Create a control for the Resistance Control Area
+    var resistanceControlLayers = {
+      "Resistance Control Area": eroControlledLayer,
+    };
 
-                legend.addTo(map);
-            }
+    L.control.layers(null, resistanceControlLayers, { collapsed: false }).addTo(map);
 
-            document.getElementById('login').style.display = 'block';
-        </script>
-    </body>
+    // Create a control for the Internet Connectivity sub-categories
+    var internetConnectivityLayers = {
+      "Activated Area": activatedAreaLayer,
+      "Do Not Know": doNotKnowLayer,
+      "Internet Blackout": internetBlackoutLayer,
+      "Mobile Phone & Internet Blackout": mobilePhoneAndInternetBlackoutLayer,
+      "Only 2G Available": only2GAvailableLayer
+    };
+
+    var internetConnectivityControl = L.control.layers(null, internetConnectivityLayers, { collapsed: false }).addTo(map);
+    internetConnectivityControl.getContainer().prepend("Internet Connectivity");
+
+    // Create a control for the Alternative Internet sub-categories
+    var alternativeInternetLayers = {
+      "China wifi cable": chinaWifiCableLayer,
+      "Foreign SIM": foreignSimLayer,
+      "Satellite Internet": satelliteInternetLayer
+    };
+
+    var alternativeInternetControl = L.control.layers(null, alternativeInternetLayers, { collapsed: false }).addTo(map);
+    alternativeInternetControl.getContainer().prepend("Alternative Internet");
+
+  </script>
+</body>
 </html>
