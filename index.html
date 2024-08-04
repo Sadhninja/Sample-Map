@@ -151,7 +151,7 @@
     }
 
     // Create layer groups for each sub-category
-    var activatedAreaLayer = new L.GeoJSON.AJAX("geojson/Internet_connectivity.geojson", {
+    var activatedAreaLayer = new L.GeoJSON.AJAX("geojson/internet_connectivity.geojson", {
       style: function(feature) {
         if (feature.properties.status === 'Activated Area') return style_Internet_connectivity(feature);
       },
@@ -161,7 +161,7 @@
       onEachFeature: onEachFeature
     });
 
-    var doNotKnowLayer = new L.GeoJSON.AJAX("geojson/Internet_connectivity.geojson", {
+    var doNotKnowLayer = new L.GeoJSON.AJAX("geojson/internet_connectivity.geojson", {
       style: function(feature) {
         if (feature.properties.status === 'Do Not Know') return style_Internet_connectivity(feature);
       },
@@ -171,7 +171,7 @@
       onEachFeature: onEachFeature
     });
 
-    var internetBlackoutLayer = new L.GeoJSON.AJAX("geojson/Internet_connectivity.geojson", {
+    var internetBlackoutLayer = new L.GeoJSON.AJAX("geojson/internet_connectivity.geojson", {
       style: function(feature) {
         if (feature.properties.status === 'Internet Blackout') return style_Internet_connectivity(feature);
       },
@@ -181,7 +181,7 @@
       onEachFeature: onEachFeature
     });
 
-    var mobilePhoneAndInternetBlackoutLayer = new L.GeoJSON.AJAX("geojson/Internet_connectivity.geojson", {
+    var mobilePhoneAndInternetBlackoutLayer = new L.GeoJSON.AJAX("geojson/internet_connectivity.geojson", {
       style: function(feature) {
         if (feature.properties.status === 'Mobile Phone & Internet Blackout') return style_Internet_connectivity(feature);
       },
@@ -191,7 +191,7 @@
       onEachFeature: onEachFeature
     });
 
-    var only2GAvailableLayer = new L.GeoJSON.AJAX("geojson/Internet_connectivity.geojson", {
+    var only2GAvailableLayer = new L.GeoJSON.AJAX("geojson/internet_connectivity.geojson", {
       style: function(feature) {
         if (feature.properties.status === 'Only 2G Available') return style_Internet_connectivity(feature);
       },
